@@ -127,7 +127,7 @@
 				first_code=0;
 				last_code=0;
 				create_station_obj();
-				console.log("Init Time "+(Date.now()-start_time)+" ms.");////////// Finish Init Time //////////
+				// console.log("Init Time "+(Date.now()-start_time)+" ms.");////////// Finish Init Time //////////
 			}
 			function set_size()
 			{
@@ -267,9 +267,17 @@
 							}
 						});
 					}
-					console.log("Search Time "+(Date.now()-start_time)+" ms.");////////// Finish Search Time //////////
-					console.log(node[last_code].path);
+					// console.log("Search Time "+(Date.now()-start_time)+" ms.");////////// Finish Search Time //////////
+					// console.log(node[last_code].path);
 					// console.log(node);
+					for(var i=1;i<node[last_code].path.length;i++)
+					{
+						console.log("ต่อที่ "+i+" : "+station_obj[node[last_code].path[i-1]].name+" --> "+station_obj[node[last_code].path[i]].name);
+						for(var j=0;j<link[node[last_code].path[i-1]][node[last_code].path[i]].length;j++)
+						{
+							console.log(time_display(link[node[last_code].path[i-1]][node[last_code].path[i]][j][0])+" --> "+time_display(link[node[last_code].path[i-1]][node[last_code].path[i]][j][1])+" ("+time_display(link[node[last_code].path[i-1]][node[last_code].path[i]][j][1]-link[node[last_code].path[i-1]][node[last_code].path[i]][j][0])+") | Train no. "+link[node[last_code].path[i-1]][node[last_code].path[i]][j][2]);
+						}
+					}
 				}
 			}
 			function time_display(time)
