@@ -1,197 +1,288 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	<title>Smart train search system in Thailand</title>
-	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<style>
-		*
-		{
-			box-sizing:border-box;
-		}
-		div
-		{
-			position:absolute;
-		}
-		.layer
-		{
-			width:100%;
-			height:100%;
-			overflow:hidden;
-		}
-		#input_div>*
-		{
-			height:100%;
-		}
-		input
-		{
-			position:absolute;
-			font-size:15px;
-			text-align:center;
-		}
-		.image_button
-		{
-			padding:2px;
-			background-repeat:no-repeat;
-			background-origin:content-box;
-			background-size:contain;
-			background-position:center;
-		}
-		ul
-		{
-			width:50%;
-			height:100%;
-			position:absolute;
-			margin:0px;
-			padding:0px;
-			overflow:auto;
-			list-style-type:none;
-			text-align:center;
-		}
-		li
-		{
-			border:1px solid #dddddd;
-			/* background-color:#f6f6f6; */
-			padding:2px;
-			/* font-size:18px; */
-			display:block;
-		}
-		li:hover
-		{
-			background-color:#eeeeee;
-		}
-	</style>
-</head>
-<body style="margin:0px;" onresize="set_size()">
-	<div class="layer" style="z-index:0;">
-		<div class="layer" style="z-index:1;">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<title>Smart train search system in Thailand</title>
+		<style>
+			*
+			{
+				box-sizing:border-box;
+			}
+			div
+			{
+				position:absolute;
+			}
+			#root
+			{
+				width:100%;
+				height:100%;
+				overflow:hidden;
+			}
+			#input_div>*
+			{
+				height:100%;
+			}
+			input
+			{
+				position:absolute;
+				font-size:15px;
+				text-align:center;
+			}
+			.clear_input
+			{
+				padding:2px 5px;
+				font-size:20px;
+				cursor:default;
+			}
+			.image_button
+			{
+				padding:3px;
+				background-repeat:no-repeat;
+				background-origin:content-box;
+				background-size:contain;
+				background-position:center;
+				cursor:pointer;
+			}
+			#swap_button
+			{
+				background-color:#00ffff;
+			}
+			#swap_button:hover
+			{
+				background-color:#bfffff;
+			}
+			#search_button
+			{
+				background-color:#00ff00;
+			}
+			#search_button:hover
+			{
+				background-color:#bfffbf;
+			}
+			ul
+			{
+				width:50%;
+				height:100%;
+				position:absolute;
+				margin:0px;
+				padding:0px;
+				overflow:auto;
+				list-style-type:none;
+				text-align:center;
+			}
+			li
+			{
+				border:1px solid #dddddd;
+				/* background-color:#f6f6f6; */
+				padding:2px;
+				/* font-size:18px; */
+				display:block;
+			}
+			li:hover
+			{
+				background-color:#eeeeee;
+			}
+		</style>
+	</head>
+	<body style="margin:0px;" onresize="set_size()">
+		<div id="root" style="z-index:0;">
 			<h3 style="width:100%;height:70px;margin:0px;padding:20px 0px;text-align:center;">Smart train search system in Thailand</h3>
 			<div id="input_div" style="width:100%;height:30px;">
 				<input id="first_input" type="text" onkeyup="update_li('first','keyup')" style="left:0%;width:40%;">
-				<div class="image_button" onclick="swap()" style="left:40%;width:10%;background-color:#00ffff;background-image:url('swap.png')"></div>
+				<div class="clear_input" onclick="clear_input('first')" style="right:60%;">X</div>
+				<div id="swap_button" class="image_button" onclick="swap()" style="left:40%;width:10%;background-image:url('swap.png')"></div>
 				<input id="last_input" type="text" onkeyup="update_li('last','keyup')" style="left:50%;width:40%;">
-				<div class="image_button" onclick="search()" style="left:90%;width:10%;background-color:#00ff00;background-image:url('search.png')"></div>
+				<div class="clear_input" onclick="clear_input('last')" style="right:10%;">X</div>
+				<div id="search_button" class="image_button" onclick="search()" style="left:90%;width:10%;background-image:url('search.png')"></div>
 			</div>
-			<div id="ul_div" style="bottom:0px;width:100%;">
+			<div id="ul_div" style="z-index:1;bottom:0px;width:100%;background-color:#ffffff">
 				<ul id="first_ul" style="left:0%;"></ul>
 				<ul id="last_ul" style="left:50%;"></ul>
 			</div>
+			<div id="result_div" style="z-index:2;bottom:0px;width:100%;background-color:#ffffff">
+				Test
+			</div>
 		</div>
-		<div class="layer" style="z-index:2;"></div>
-		<div class="layer" style="z-index:3;"></div>
-	</div>
-	<script src="data.js"></script>
-	<script>
-		var first_code,last_code;
-		init();
-		function init()
-		{
-			document.getElementsByClassName("layer")[1].style.zIndex=10;
-			document.getElementById("first_input").value="";
-			document.getElementById("last_input").value="";
-			document.getElementById("first_input").placeholder=string.first_input.placeholder;
-			document.getElementById("last_input").placeholder=string.last_input.placeholder;
-			document.getElementById("first_input").title=string.first_input.title;
-			document.getElementById("last_input").title=string.last_input.title;
-			set_size();
-			add_station("first");
-			add_station("last");
-			first_code=0;
-			last_code=0;
-		}
-		function set_size()
-		{
-			document.getElementById("ul_div").style.height=(window.innerHeight-110)+"px";
-		}
-		function add_station(first_or_last)
-		{
-			for(var i=0;i<station_list.length;i++)
+		<script src="data.js"></script>
+		<script src="link.js"></script>
+		<script>
+			var first_code,last_code;
+			var station_obj={};
+			var node={};
+			init();
+			function init()
 			{
-				var li=document.createElement("LI");
-				li.innerHTML=station_list[i][0]+"<span hidden>"+station_list[i][1]+"</span>";
-				addEvent_li_click(li,i);
-				document.getElementById(first_or_last+"_ul").appendChild(li);
+				var start_time=Date.now();////////// Start Init Time //////////
+				document.getElementById("ul_div").style.zIndex=10;
+				document.getElementById("first_input").value="";
+				document.getElementById("last_input").value="";
+				document.getElementById("first_input").placeholder=string.first_input.placeholder;
+				document.getElementById("last_input").placeholder=string.last_input.placeholder;
+				document.getElementById("first_input").title=string.first_input.title;
+				document.getElementById("last_input").title=string.last_input.title;
+				set_size();
+				add_station("first");
+				add_station("last");
+				first_code=0;
+				last_code=0;
+				create_station_obj();
+				console.log("Init Time "+(Date.now()-start_time)+" ms.");////////// Finish Init Time //////////
 			}
-			function addEvent_li_click(li,i)
+			function set_size()
 			{
-				li.addEventListener("click",function()
-				{
-					document.getElementById(first_or_last+"_input").value=station_list[i][0];
-					switch(first_or_last)
-					{
-						case "first":first_code=station_list[i][2];break;
-						case "last":last_code=station_list[i][2];break;
-					}
-					update_li(first_or_last,"click");
-				});
+				document.getElementById("ul_div").style.height=(window.innerHeight-110)+"px";
+				document.getElementById("result_div").style.height=(window.innerHeight-110)+"px";
 			}
-		}
-		function update_li(first_or_last,mode)
-		{
-			var input=document.getElementById(first_or_last+"_input").value.toLowerCase();
-			var li=document.getElementById(first_or_last+"_ul").getElementsByTagName("li");
-			for(var i=0;i<li.length;i++)
+			function add_station(first_or_last)
 			{
-				li[i].style.backgroundColor="";
-				if(li[i].textContent.toLowerCase().indexOf(input)>-1)
+				for(var i=0;i<station_list.length;i++)
 				{
-					li[i].style.display="";
-					if(mode=="click"||mode=="swap")
+					var li=document.createElement("LI");
+					li.innerHTML=station_list[i][0]+"<span hidden>"+station_list[i][1]+"</span>";
+					addEvent_li_click(li,i);
+					document.getElementById(first_or_last+"_ul").appendChild(li);
+				}
+				function addEvent_li_click(li,i)
+				{
+					li.addEventListener("click",function()
 					{
+						document.getElementById(first_or_last+"_input").value=station_list[i][0];
 						switch(first_or_last)
 						{
-							case "first":if(first_code!=0){li[i].style.backgroundColor="#ffff00";}break;
-							case "last":if(last_code!=0){li[i].style.backgroundColor="#ffff00";}break;
+							case "first":first_code=station_list[i][2];break;
+							case "last":last_code=station_list[i][2];break;
+						}
+						update_li(first_or_last,"click");
+					});
+				}
+			}
+			function create_station_obj()
+			{
+				for(var i=0;i<station_list.length;i++)
+				{
+					station_obj[station_list[i][2]]={};
+					station_obj[station_list[i][2]].name=station_list[i][0];
+					station_obj[station_list[i][2]].km=station_list[i][3];
+				}
+			}
+			function update_li(first_or_last,mode)
+			{
+				var input=document.getElementById(first_or_last+"_input").value.toLowerCase();
+				var li=document.getElementById(first_or_last+"_ul").getElementsByTagName("li");
+				for(var i=0;i<li.length;i++)
+				{
+					li[i].style.backgroundColor="";
+					if(li[i].textContent.toLowerCase().indexOf(input)>-1)
+					{
+						li[i].style.display="";
+						if(mode=="click"||mode=="swap")
+						{
+							switch(first_or_last)
+							{
+								case "first":if(first_code!=0){li[i].style.backgroundColor="#ffff00";}break;
+								case "last":if(last_code!=0){li[i].style.backgroundColor="#ffff00";}break;
+							}
 						}
 					}
+					else
+					{
+						li[i].style.display="none";
+					}
+				}
+				if(mode=="keyup")
+				{
+					switch(first_or_last)
+					{
+						case "first":first_code=0;break;
+						case "last":last_code=0;break;
+					}
+				}
+			}
+			function clear_input(first_or_last)
+			{
+				document.getElementById(first_or_last+"_input").value="";
+				update_li(first_or_last,"keyup");
+			}
+			function swap()
+			{
+				var first_input_value=document.getElementById("first_input").value;
+				var last_input_value=document.getElementById("last_input").value;
+				var first_input_code=first_code;
+				var last_input_code=last_code;
+				document.getElementById("first_input").value=last_input_value;
+				document.getElementById("last_input").value=first_input_value;
+				first_code=last_input_code;
+				last_code=first_input_code;
+				update_li("first","swap");
+				update_li("last","swap");
+			}
+			function search()
+			{
+				if(first_code==0)
+				{
+					alert(string.search.first_alert);
+				}
+				else if(last_code==0)
+				{
+					alert(string.search.last_alert);
+				}
+				else if(first_code==last_code)
+				{
+					alert(string.search.same_alert);
 				}
 				else
 				{
-					li[i].style.display="none";
+					// for(var i=0;i<link[first_code][last_code].length;i++)
+					// {
+					// 	console.log(time_display(link[first_code][last_code][i][0])+" --> "+time_display(link[first_code][last_code][i][1])+" ("+time_display(link[first_code][last_code][i][1]-link[first_code][last_code][i][0])+") | Train no. "+link[first_code][last_code][i][2]);
+					// }
+					////////////////////////////////////////////////////////////////////////////////////////////////////
+					var start_time=Date.now();////////// Start Search Time //////////
+					var link_keys=Object.keys(link);
+					node={};
+					for(i=0;i<link_keys.length;i++)
+					{
+						node[link_keys[i]]={};
+						node[link_keys[i]].link=Object.keys(link[link_keys[i]]);
+						node[link_keys[i]].pass=false;
+						node[link_keys[i]].path=[];
+					}
+					node[first_code].pass=true;
+					node[first_code].path[0]=first_code;
+					var q=[first_code];
+					var u;
+					while(q.length>0)
+					{
+						u=q.shift();
+						node[u].link.forEach(function(v)
+						{
+							v=Number(v);
+							if(node[v].pass==false)
+							{
+								node[v].pass=true;
+								node[v].path=[...node[u].path];
+								node[v].path.push(v);
+								q.push(v);
+							}
+						});
+					}
+					console.log("Search Time "+(Date.now()-start_time)+" ms.");////////// Finish Search Time //////////
+					console.log(node[last_code].path);
+					// console.log(node);
 				}
 			}
-			if(mode=="keyup")
+			function time_display(time)
 			{
-				switch(first_or_last)
+				time=time%1440;
+				var h=Math.floor(time/60);
+				var m=time%60;
+				if(m<10)
 				{
-					case "first":first_code=0;break;
-					case "last":last_code=0;break;
+					m="0"+m;
 				}
+				return h+":"+m;
 			}
-		}
-		function swap()
-		{
-			var first_input_value=document.getElementById("first_input").value;
-			var last_input_value=document.getElementById("last_input").value;
-			var first_input_code=first_code;
-			var last_input_code=last_code;
-			document.getElementById("first_input").value=last_input_value;
-			document.getElementById("last_input").value=first_input_value;
-			first_code=last_input_code;
-			last_code=first_input_code;
-			update_li("first","swap");
-			update_li("last","swap");
-		}
-		function search()
-		{
-			var first_input_value=document.getElementById("first_input").value;
-			var last_input_value=document.getElementById("last_input").value;
-			if(first_code==0)
-			{
-				alert(string.search.first_alert);
-			}
-			else if(last_code==0)
-			{
-				alert(string.search.last_alert);
-			}
-			else if(first_code==last_code)
-			{
-				alert(string.search.same_alert);
-			}
-			else
-			{
-				alert(first_input_value+"\n"+last_input_value);
-			}
-		}
-	</script>
-</body>
+		</script>
+	</body>
 </html>
