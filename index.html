@@ -83,6 +83,40 @@
 			{
 				background-color:#eeeeee;
 			}
+			.result_part
+			{
+				position: initial;
+				border:1px solid #dddddd;
+				/* background-color:#f6f6f6; */
+				padding:2px;
+				text-align:center;
+				/* font-size:18px; */
+				display:block;
+			}
+			.result_train
+			{
+				position: initial;
+				border:1px solid #dddddd;
+				/* background-color:#f6f6f6; */
+				padding:2px;
+				text-align:left;
+				/* font-size:18px; */
+				display:block;
+			}
+			.result_price
+			{
+				position: initial;
+				border:1px solid #dddddd;
+				/* background-color:#f6f6f6; */
+				padding:2px;
+				text-align:right;
+				/* font-size:18px; */
+				display:block;
+			}
+			.result_price:hover
+			{
+				background-color:#eeeeee;
+			}
 		</style>
 	</head>
 	<body style="margin:0px;" onresize="set_size()">
@@ -91,21 +125,25 @@
 			<div id="input_div" style="width:100%;height:30px;">
 				<input id="first_input" type="text" onkeyup="update_li('first','keyup')" style="left:0%;width:40%;">
 				<div class="clear_input" onclick="clear_input('first')" style="right:60%;">X</div>
-				<div id="swap_button" class="image_button" onclick="swap()" style="left:40%;width:10%;background-image:url('swap.png')"></div>
+				<div id="swap_button" class="image_button" onclick="swap()" style="left:40%;width:10%;background-image:url('swap.png');"></div>
 				<input id="last_input" type="text" onkeyup="update_li('last','keyup')" style="left:50%;width:40%;">
 				<div class="clear_input" onclick="clear_input('last')" style="right:10%;">X</div>
-				<div id="search_button" class="image_button" onclick="search()" style="left:90%;width:10%;background-image:url('search.png')"></div>
+				<div id="search_button" class="image_button" onclick="search()" style="left:90%;width:10%;background-image:url('search.png');"></div>
 			</div>
-			<div id="ul_div" style="z-index:1;bottom:0px;width:100%;background-color:#ffffff">
+			<div id="ul_div" style="z-index:1;bottom:0px;width:100%;background-color:#ffffff;">
 				<ul id="first_ul" style="left:0%;"></ul>
 				<ul id="last_ul" style="left:50%;"></ul>
 			</div>
-			<div id="result_div" style="z-index:2;bottom:0px;width:100%;background-color:#ffffff">
-				Test
+			<div id="result_div" style="z-index:2;bottom:0px;width:100%;background-color:#ffffff;margin:0px;padding:0px;overflow:auto;">
+				<div class="result_part"></div>
+				<div class="result_train"></div>
+				<div class="result_price"></div>
 			</div>
 		</div>
 		<script src="data.js"></script>
 		<script src="link.js"></script>
+		<script src="car.js"></script>
+		<script src="fare.js"></script>
 		<script>
 			var first_code,last_code;
 			var station_obj={};
@@ -168,6 +206,7 @@
 			}
 			function update_li(first_or_last,mode)
 			{
+				document.getElementById("result_div").style.zIndex=2;
 				var input=document.getElementById(first_or_last+"_input").value.toLowerCase();
 				var li=document.getElementById(first_or_last+"_ul").getElementsByTagName("li");
 				for(var i=0;i<li.length;i++)
@@ -216,6 +255,10 @@
 				last_code=first_input_code;
 				update_li("first","swap");
 				update_li("last","swap");
+				if(first_code!=0&&last_code!=0&&first_code!=last_code)
+				{
+					search();
+				}
 			}
 			function search()
 			{
@@ -241,7 +284,7 @@
 					var start_time=Date.now();////////// Start Search Time //////////
 					var link_keys=Object.keys(link);
 					node={};
-					for(i=0;i<link_keys.length;i++)
+					for(var i=0;i<link_keys.length;i++)
 					{
 						node[link_keys[i]]={};
 						node[link_keys[i]].link=Object.keys(link[link_keys[i]]);
@@ -251,13 +294,22 @@
 					node[first_code].pass=true;
 					node[first_code].path[0]=first_code;
 					var q=[first_code];
-					var u;
-					while(q.length>0)
+					var u,v;
+					var distance_link=[];
+					var indexOf_min;
+					while(q.length>0&&node[last_code].pass==false)
 					{
 						u=q.shift();
-						node[u].link.forEach(function(v)
+						distance_link=[];
+						for(var i=0;i<node[u].link.length;i++)
 						{
-							v=Number(v);
+							distance_link[i]=Math.abs(station_obj[u].km-station_obj[node[u].link[i]].km);
+						}
+						for(var i=0;i<node[u].link.length;i++)
+						{
+							indexOf_min=distance_link.indexOf(Math.min(...distance_link));
+							distance_link[indexOf_min]=999999;
+							v=Number(node[u].link[indexOf_min]);
 							if(node[v].pass==false)
 							{
 								node[v].pass=true;
@@ -265,17 +317,44 @@
 								node[v].path.push(v);
 								q.push(v);
 							}
-						});
+						}
 					}
 					console.log("Search Time "+(Date.now()-start_time)+" ms.");////////// Finish Search Time //////////
-					// console.log(node[last_code].path);
-					// console.log(node);
+					document.getElementById("result_div").innerHTML="";
+					document.getElementById("result_div").style.zIndex=20;
+					var from_code,to_code,distance,STD,STA,train;
+					var temp_result_part,temp_result_train,temp_result_price;
 					for(var i=1;i<node[last_code].path.length;i++)
 					{
-						console.log("ต่อที่ "+i+" : "+station_obj[node[last_code].path[i-1]].name+" --> "+station_obj[node[last_code].path[i]].name+" ("+Math.abs(station_obj[node[last_code].path[i-1]].km-station_obj[node[last_code].path[i]].km)+" km.)");
-						for(var j=0;j<link[node[last_code].path[i-1]][node[last_code].path[i]].length;j++)
+						from_code=node[last_code].path[i-1];
+						to_code=node[last_code].path[i];
+						distance=Math.abs(station_obj[from_code].km-station_obj[to_code].km);
+						console.log("ต่อที่ "+i+" : "+station_obj[from_code].name+" --> "+station_obj[to_code].name+" ("+distance+" km.)");
+						temp_result_part=document.createElement("DIV");
+						temp_result_part.className="result_part";
+						temp_result_part.textContent="ต่อที่ "+i+" : "+station_obj[from_code].name+" --> "+station_obj[to_code].name+" ("+distance+" km.)";
+						document.getElementById("result_div").appendChild(temp_result_part);
+						for(var j=0;j<link[from_code][to_code].length;j++)
 						{
-							console.log(time_display(link[node[last_code].path[i-1]][node[last_code].path[i]][j][0])+" --> "+time_display(link[node[last_code].path[i-1]][node[last_code].path[i]][j][1])+" ("+time_display(link[node[last_code].path[i-1]][node[last_code].path[i]][j][1]-link[node[last_code].path[i-1]][node[last_code].path[i]][j][0])+") | Train no. "+link[node[last_code].path[i-1]][node[last_code].path[i]][j][2]);
+							STD=link[from_code][to_code][j][0];
+							STA=link[from_code][to_code][j][1];
+							train=link[from_code][to_code][j][2];
+							console.log(time_display(STD)+" --> "+time_display(STA)+" ("+time_display(STA-STD)+") | Train no. "+train);
+							temp_result_train=document.createElement("DIV");
+							temp_result_train.className="result_train";
+							temp_result_train.textContent=time_display(STD)+" --> "+time_display(STA)+" ("+time_display(STA-STD)+") | Train no. "+train;
+							document.getElementById("result_div").appendChild(temp_result_train);
+							if(car[train])
+							{
+								for(var k=0;k<car[train].length;k++)
+								{
+									console.log(car_text(car[train][k])+" "+price_cal(car[train][k],distance)+" บาท");
+									temp_result_price=document.createElement("DIV");
+									temp_result_price.className="result_price";
+									temp_result_price.textContent=car_text(car[train][k])+" "+price_cal(car[train][k],distance)+" บาท";
+									document.getElementById("result_div").appendChild(temp_result_price);
+								}
+							}
 						}
 					}
 				}
@@ -290,6 +369,198 @@
 					m="0"+m;
 				}
 				return h+":"+m;
+			}
+			function car_text(car)
+			{
+				var car_type=car[0];
+				var car_class=car[1];
+				var car_air=car[2];
+				var car_meal=car[3];
+				var car_berth=car[4];
+				var type_text,class_text,air_text,meal_text,berth_text;
+				// type_text
+				switch(car_type)
+				{
+					case 7:type_text="รถด่วนพิเศษ CNR";break;
+					case 6:type_text="รถด่วนพิเศษ";break;
+					case 5:type_text="รถด่วนพิเศษ";break;
+					case 4:type_text="รถด่วน";break;
+					case 3:type_text="รถเร็ว";break;
+					case 2:type_text="รถธรรมดา";break;
+					case 1:type_text="รถชานเมือง";break;
+					case 0:type_text="รถท้องถิ่น";break;
+					default:type_text="";break;
+				}
+				// class_text
+				switch(car_class)
+				{
+					case 3:class_text="ชั้น 3";break;
+					case 2:class_text="ชั้น 2";break;
+					case 1:class_text="ชั้น 1";break;
+					default:class_text="";break;
+				}
+				// air_text
+				switch(car_air)
+				{
+					case 1:air_text="ปรับอากาศ";break;
+					default:air_text="พัดลม";break;
+				}
+				// meal_text
+				switch(car_meal)
+				{
+					case 1:meal_text="(มีบริการอาหาร)";break;
+					default:meal_text="";break;
+				}
+				// berth_text
+				switch(car_berth[0])
+				{
+					case 0:berth_text="นั่ง";break;
+					// default:berth_text="";break;
+					default:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_text="นอน เตียงบน";break;
+							case 1:berth_text="นอน เตียงล่าง";break;
+							case 0:berth_text="นอน เหมาห้อง";break;
+							default:berth_text="";break;
+						}
+					}break;
+				}
+				return type_text+" "+class_text+" "+berth_text+" "+air_text+" "+meal_text;
+			}
+			function price_cal(car,distance)
+			{
+				var car_type=car[0];
+				var car_class=car[1];
+				var car_air=car[2];
+				var car_meal=car[3];
+				var car_berth=car[4];
+				var fare_cal,type_cal,air_cal,meal_cal,berth_cal;
+				// fare_cal
+				fare_cal=fare[distance][car_class-1];
+				// type_cal
+				switch(car_type)
+				{
+					case 7:type_cal=250;break;
+					case 6:type_cal=190;break;
+					case 5:type_cal=170;break;
+					case 4:type_cal=150;break;
+					case 3:
+					{
+						if(distance<=50){type_cal=20;}
+						else if(distance<=150){type_cal=30;}
+						else if(distance<=300){type_cal=50;}
+						else{type_cal=110;}
+					}break;
+					default:type_cal=0;break;
+				}
+				// air_cal
+				if(car_air==0)
+				{
+					air_cal=0;
+				}
+				else if(car_type==7)
+				{
+					if(distance<=300){air_cal=150;}
+					else if(distance<=500){air_cal=180;}
+					else{air_cal=210;}
+				}
+				else if(car_berth[0]>0)
+				{
+					if(distance<=300){air_cal=130;}
+					else if(distance<=500){air_cal=150;}
+					else{air_cal=170;}
+				}
+				else if(car_class==2)
+				{
+					if(distance<=300){air_cal=60;}
+					else if(distance<=500){air_cal=70;}
+					else{air_cal=110;}
+				}
+				else
+				{
+					if(distance<=300){air_cal=60;}
+					else if(distance<=500){air_cal=70;}
+					else{air_cal=100;}
+				}
+				// meal_cal
+				switch(car_meal)
+				{
+					case 1:meal_cal=80;break;
+					default:meal_cal=0;break;
+				}
+				// berth_cal
+				switch(car_berth[0])
+				{
+					case 7:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_cal=400;break;
+							case 1:berth_cal=600;break;
+							case 0:berth_cal=1400;break;
+							default:berth_cal=0;break;
+						}
+					}break;
+					case 6:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_cal=200;break;
+							case 1:berth_cal=300;break;
+							default:berth_cal=0;break;
+						}
+					}break;
+					case 5:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_cal=300;break;
+							case 1:berth_cal=500;break;
+							case 0:berth_cal=1000;break;
+							default:berth_cal=0;break;
+						}
+					}break;
+					case 4:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_cal=150;break;
+							case 1:berth_cal=240;break;
+							default:berth_cal=0;break;
+						}
+					}break;
+					case 3:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_cal=150;break;
+							case 1:berth_cal=220;break;
+							default:berth_cal=0;break;
+						}
+					}break;
+					case 2:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_cal=130;break;
+							case 1:berth_cal=200;break;
+							default:berth_cal=0;break;
+						}
+					}break;
+					case 1:
+					{
+						switch(car_berth[1])
+						{
+							case 2:berth_cal=100;break;
+							case 1:berth_cal=150;break;
+							default:berth_cal=0;break;
+						}
+					}break;
+					default:berth_cal=0;break;
+				}
+				return fare_cal+type_cal+air_cal+meal_cal+berth_cal;
 			}
 		</script>
 	</body>

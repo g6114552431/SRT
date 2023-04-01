@@ -1,3 +1,15 @@
+/*
+var link=
+{
+	from:
+	{
+		to:
+		[
+			[STD,STA,train]
+		]
+	}
+};
+*/
 var link=
 {
 1001:{1002:[[990,997,301],
