@@ -111,7 +111,7 @@
 			{
 				background-color:#eeeeee;
 			}
-			.result_price
+			.result_car
 			{
 				position: initial;
 				border:1px solid #dddddd;
@@ -121,7 +121,7 @@
 				/* font-size:18px; */
 				display:block;
 			}
-			.result_price:hover
+			.result_car:hover
 			{
 				background-color:#eeeeee;
 			}
@@ -146,11 +146,11 @@
 			{
 				background-color:#bfffbf;
 			}
-			.tr_result_price
+			.tr_result_car
 			{
 				background-color:#dfdfff;
 			}
-			.tr_result_price:hover
+			.tr_result_car:hover
 			{
 				background-color:#bfbfff;
 			}
@@ -174,7 +174,7 @@
 			<div id="result_div" style="z-index:2;bottom:0px;width:100%;background-color:#ffffff;margin:0px;padding:0px;overflow:auto;">
 				<div class="result_part"></div>
 				<div class="result_train"></div>
-				<div class="result_price"></div>
+				<div class="result_car"></div>
 				<table id="result_table" style="width:100%;"></table>
 			</div>
 		</div>
@@ -186,6 +186,7 @@
 			var first_code,last_code;
 			var station_obj={};
 			var node={};
+			var tr_display={};
 			init();
 			function init()
 			{
@@ -362,6 +363,7 @@
 					var from_code,to_code,distance,STD,STA,train;
 					var temp_result_part,temp_result_train,temp_result_price;
 					var tr,td;
+					tr_display={};
 					for(var i=1;i<node[last_code].path.length;i++)
 					{
 						from_code=node[last_code].path[i-1];
@@ -375,6 +377,8 @@
 
 						tr=document.createElement("TR");
 						tr.className="tr_result_part";
+						tr_display["part_"+i]=1;
+						addEvent_tr_click_update_display(tr,"part_"+i);
 						td=document.createElement("TD");
 						td.colSpan=4;
 						td.style.textAlign="center";
@@ -394,6 +398,10 @@
 
 							tr=document.createElement("TR");
 							tr.className="tr_result_train";
+							tr.classList.add("part_"+i);
+							tr.style.display="";
+							tr_display["train_"+train]=1;
+							addEvent_tr_click_update_display(tr,"train_"+train);
 							td=document.createElement("TD");
 							td.style.textAlign="center";
 							td.innerHTML="ออกเวลา "+time_display(STD);
@@ -416,12 +424,15 @@
 								for(var k=0;k<car[train].length;k++)
 								{
 									// temp_result_price=document.createElement("DIV");
-									// temp_result_price.className="result_price";
+									// temp_result_price.className="result_car";
 									// temp_result_price.textContent=car_text(car[train][k])+" "+price_cal(car[train][k],distance)+" บาท";
 									// document.getElementById("result_div").appendChild(temp_result_price);
 
 									tr=document.createElement("TR");
-									tr.className="tr_result_price";
+									tr.className="tr_result_car";
+									tr.classList.add("part_"+i);
+									tr.classList.add("train_"+train);
+									tr.style.display="";
 									td=document.createElement("TD");
 									tr.appendChild(td);
 									td=document.createElement("TD");
@@ -437,6 +448,48 @@
 						}
 					}
 				}
+			}
+			function addEvent_tr_click_update_display(tr,key)
+			{
+				tr.addEventListener("click",function()
+				{
+					switch(tr_display[key])
+					{
+						case 1:tr_display[key]=0;break;
+						case 0:tr_display[key]=1;break;
+					}
+					switch(tr_display[key])
+					{
+						case 1:
+						{
+							for(var i=0;i<document.getElementsByClassName(key).length;i++)
+							{
+								if(document.getElementsByClassName(key)[i].classList[0]=="tr_result_car")
+								{
+									if(tr_display[document.getElementsByClassName(key)[i].classList[1]]==0||tr_display[document.getElementsByClassName(key)[i].classList[2]]==0)
+									{
+										document.getElementsByClassName(key)[i].style.display="none";
+									}
+									else
+									{
+										document.getElementsByClassName(key)[i].style.display="";
+									}
+								}
+								else
+								{
+									document.getElementsByClassName(key)[i].style.display="";
+								}
+							}
+						}break;
+						case 0:
+						{
+							for(var i=0;i<document.getElementsByClassName(key).length;i++)
+							{
+								document.getElementsByClassName(key)[i].style.display="none";
+							}
+						}break;
+					}
+				});
 			}
 			function time_display(time)
 			{
