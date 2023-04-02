@@ -93,6 +93,10 @@
 				/* font-size:18px; */
 				display:block;
 			}
+			.result_part:hover
+			{
+				background-color:#eeeeee;
+			}
 			.result_train
 			{
 				position: initial;
@@ -102,6 +106,10 @@
 				text-align:left;
 				/* font-size:18px; */
 				display:block;
+			}
+			.result_train:hover
+			{
+				background-color:#eeeeee;
 			}
 			.result_price
 			{
@@ -116,6 +124,35 @@
 			.result_price:hover
 			{
 				background-color:#eeeeee;
+			}
+			table,th,td
+			{
+				/* border:1px solid #000000; */
+				border-collapse:collapse;
+			}
+			.tr_result_part
+			{
+				background-color:#ffdfdf;
+			}
+			.tr_result_part:hover
+			{
+				background-color:#ffbfbf;
+			}
+			.tr_result_train
+			{
+				background-color:#dfffdf;
+			}
+			.tr_result_train:hover
+			{
+				background-color:#bfffbf;
+			}
+			.tr_result_price
+			{
+				background-color:#dfdfff;
+			}
+			.tr_result_price:hover
+			{
+				background-color:#bfbfff;
 			}
 		</style>
 	</head>
@@ -138,6 +175,7 @@
 				<div class="result_part"></div>
 				<div class="result_train"></div>
 				<div class="result_price"></div>
+				<table id="result_table" style="width:100%;"></table>
 			</div>
 		</div>
 		<script src="data.js"></script>
@@ -151,7 +189,7 @@
 			init();
 			function init()
 			{
-				var start_time=Date.now();////////// Start Init Time //////////
+				// var start_time=Date.now();////////// Start Init Time //////////
 				document.getElementById("ul_div").style.zIndex=10;
 				document.getElementById("first_input").value="";
 				document.getElementById("last_input").value="";
@@ -276,11 +314,9 @@
 				}
 				else
 				{
-					// for(var i=0;i<link[first_code][last_code].length;i++)
-					// {
-					// 	console.log(time_display(link[first_code][last_code][i][0])+" --> "+time_display(link[first_code][last_code][i][1])+" ("+time_display(link[first_code][last_code][i][1]-link[first_code][last_code][i][0])+") | Train no. "+link[first_code][last_code][i][2]);
-					// }
-					////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 					var start_time=Date.now();////////// Start Search Time //////////
 					var link_keys=Object.keys(link);
 					node={};
@@ -322,37 +358,80 @@
 					console.log("Search Time "+(Date.now()-start_time)+" ms.");////////// Finish Search Time //////////
 					document.getElementById("result_div").innerHTML="";
 					document.getElementById("result_div").style.zIndex=20;
+					document.getElementById("result_div").innerHTML="<table id='result_table' frame=hsides rules=rows style='width:100%;'></table>";
 					var from_code,to_code,distance,STD,STA,train;
 					var temp_result_part,temp_result_train,temp_result_price;
+					var tr,td;
 					for(var i=1;i<node[last_code].path.length;i++)
 					{
 						from_code=node[last_code].path[i-1];
 						to_code=node[last_code].path[i];
 						distance=Math.abs(station_obj[from_code].km-station_obj[to_code].km);
-						console.log("ต่อที่ "+i+" : "+station_obj[from_code].name+" --> "+station_obj[to_code].name+" ("+distance+" km.)");
-						temp_result_part=document.createElement("DIV");
-						temp_result_part.className="result_part";
-						temp_result_part.textContent="ต่อที่ "+i+" : "+station_obj[from_code].name+" --> "+station_obj[to_code].name+" ("+distance+" km.)";
-						document.getElementById("result_div").appendChild(temp_result_part);
+
+						// temp_result_part=document.createElement("DIV");
+						// temp_result_part.className="result_part";
+						// temp_result_part.textContent="ต่อที่ "+i+" : "+station_obj[from_code].name+" --> "+station_obj[to_code].name+" ("+distance+" km.)";
+						// document.getElementById("result_div").appendChild(temp_result_part);
+
+						tr=document.createElement("TR");
+						tr.className="tr_result_part";
+						td=document.createElement("TD");
+						td.colSpan=4;
+						td.style.textAlign="center";
+						td.innerHTML="ต่อที่ "+i+" : "+station_obj[from_code].name+" --> "+station_obj[to_code].name+" ("+distance+" km.)";
+						tr.appendChild(td);
+						document.getElementById("result_table").appendChild(tr);
 						for(var j=0;j<link[from_code][to_code].length;j++)
 						{
 							STD=link[from_code][to_code][j][0];
 							STA=link[from_code][to_code][j][1];
 							train=link[from_code][to_code][j][2];
-							console.log(time_display(STD)+" --> "+time_display(STA)+" ("+time_display(STA-STD)+") | Train no. "+train);
-							temp_result_train=document.createElement("DIV");
-							temp_result_train.className="result_train";
-							temp_result_train.textContent=time_display(STD)+" --> "+time_display(STA)+" ("+time_display(STA-STD)+") | Train no. "+train;
-							document.getElementById("result_div").appendChild(temp_result_train);
+
+							// temp_result_train=document.createElement("DIV");
+							// temp_result_train.className="result_train";
+							// temp_result_train.textContent=time_display(STD)+" --> "+time_display(STA)+" ("+time_display(STA-STD)+") | Train no. "+train;
+							// document.getElementById("result_div").appendChild(temp_result_train);
+
+							tr=document.createElement("TR");
+							tr.className="tr_result_train";
+							td=document.createElement("TD");
+							td.style.textAlign="center";
+							td.innerHTML="ออกเวลา "+time_display(STD);
+							tr.appendChild(td);
+							td=document.createElement("TD");
+							td.style.textAlign="center";
+							td.innerHTML=" ถึงเวลา "+time_display(STA);
+							tr.appendChild(td);
+							td=document.createElement("TD");
+							td.style.textAlign="center";
+							td.innerHTML=" (ใช้เวลา "+time_display(STA-STD)+" ชม.)";
+							tr.appendChild(td);
+							td=document.createElement("TD");
+							td.style.textAlign="center";
+							td.innerHTML=" ขบวนที่ "+train;
+							tr.appendChild(td);
+							document.getElementById("result_table").appendChild(tr);
 							if(car[train])
 							{
 								for(var k=0;k<car[train].length;k++)
 								{
-									console.log(car_text(car[train][k])+" "+price_cal(car[train][k],distance)+" บาท");
-									temp_result_price=document.createElement("DIV");
-									temp_result_price.className="result_price";
-									temp_result_price.textContent=car_text(car[train][k])+" "+price_cal(car[train][k],distance)+" บาท";
-									document.getElementById("result_div").appendChild(temp_result_price);
+									// temp_result_price=document.createElement("DIV");
+									// temp_result_price.className="result_price";
+									// temp_result_price.textContent=car_text(car[train][k])+" "+price_cal(car[train][k],distance)+" บาท";
+									// document.getElementById("result_div").appendChild(temp_result_price);
+
+									tr=document.createElement("TR");
+									tr.className="tr_result_price";
+									td=document.createElement("TD");
+									tr.appendChild(td);
+									td=document.createElement("TD");
+									td.colSpan=2;
+									td.innerHTML=car_text(car[train][k]);
+									tr.appendChild(td);
+									td=document.createElement("TD");
+									td.innerHTML=price_cal(car[train][k],distance)+" บาท";
+									tr.appendChild(td);
+									document.getElementById("result_table").appendChild(tr);
 								}
 							}
 						}
