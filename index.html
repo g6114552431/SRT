@@ -175,7 +175,7 @@
 				<div class="result_part"></div>
 				<div class="result_train"></div>
 				<div class="result_car"></div>
-				<table id="result_table" style="width:100%;"></table>
+				<table id="result_table" frame=hsides rules=rows style="width:100%;"></table>
 			</div>
 		</div>
 		<script src="data.js"></script>
@@ -315,9 +315,6 @@
 				}
 				else
 				{
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
 					var start_time=Date.now();////////// Start Search Time //////////
 					var link_keys=Object.keys(link);
 					node={};
@@ -509,7 +506,7 @@
 				var car_air=car[2];
 				var car_meal=car[3];
 				var car_berth=car[4];
-				var type_text,class_text,air_text,meal_text,berth_text;
+				var type_text,class_text,air_text,meal_text,berth_text=[];
 				// type_text
 				switch(car_type)
 				{
@@ -526,40 +523,44 @@
 				// class_text
 				switch(car_class)
 				{
-					case 3:class_text="ชั้น 3";break;
-					case 2:class_text="ชั้น 2";break;
-					case 1:class_text="ชั้น 1";break;
+					case 3:class_text=" ชั้น 3";break;
+					case 2:class_text=" ชั้น 2";break;
+					case 1:class_text=" ชั้น 1";break;
 					default:class_text="";break;
 				}
 				// air_text
 				switch(car_air)
 				{
-					case 1:air_text="ปรับอากาศ";break;
-					default:air_text="พัดลม";break;
+					case 1:air_text=" ปรับอากาศ";break;
+					default:air_text=" พัดลม";break;
 				}
 				// meal_text
 				switch(car_meal)
 				{
-					case 1:meal_text="(มีบริการอาหาร)";break;
+					case 1:meal_text=" (มีบริการอาหาร)";break;
 					default:meal_text="";break;
 				}
 				// berth_text
 				switch(car_berth[0])
 				{
-					case 0:berth_text="นั่ง";break;
-					// default:berth_text="";break;
+					case 0:
+					{
+						berth_text[0]=" นั่ง";
+						berth_text[1]="";
+					}break;
 					default:
 					{
+						berth_text[0]=" นอน";
 						switch(car_berth[1])
 						{
-							case 2:berth_text="นอน เตียงบน";break;
-							case 1:berth_text="นอน เตียงล่าง";break;
-							case 0:berth_text="นอน เหมาห้อง";break;
-							default:berth_text="";break;
+							case 2:berth_text[1]=" เตียงบน";break;
+							case 1:berth_text[1]=" เตียงล่าง";break;
+							case 0:berth_text[1]=" เหมาห้อง";break;
+							default:berth_text[1]="";break;
 						}
 					}break;
 				}
-				return type_text+" "+class_text+" "+berth_text+" "+air_text+" "+meal_text;
+				return type_text+class_text+berth_text[0]+air_text+berth_text[1]+meal_text;
 			}
 			function price_cal(car,distance)
 			{
