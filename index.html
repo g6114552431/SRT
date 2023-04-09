@@ -280,6 +280,7 @@
 			function clear_input(first_or_last)
 			{
 				document.getElementById(first_or_last+"_input").value="";
+				document.getElementById(first_or_last+"_input").focus();
 				update_li(first_or_last,"keyup");
 			}
 			function swap()
