@@ -78,6 +78,7 @@
 				padding:2px;
 				/* font-size:18px; */
 				display:block;
+				cursor:default;
 			}
 			li:hover
 			{
@@ -133,6 +134,7 @@
 			.tr_result_part
 			{
 				background-color:#ffdfdf;
+				cursor:default;
 			}
 			.tr_result_part:hover
 			{
@@ -141,6 +143,7 @@
 			.tr_result_train
 			{
 				background-color:#dfffdf;
+				cursor:default;
 			}
 			.tr_result_train:hover
 			{
@@ -149,6 +152,7 @@
 			.tr_result_car
 			{
 				background-color:#dfdfff;
+				cursor:default;
 			}
 			.tr_result_car:hover
 			{
@@ -172,9 +176,9 @@
 				<ul id="last_ul" style="left:50%;"></ul>
 			</div>
 			<div id="result_div" style="z-index:2;bottom:0px;width:100%;background-color:#ffffff;margin:0px;padding:0px;overflow:auto;">
-				<div class="result_part"></div>
-				<div class="result_train"></div>
-				<div class="result_car"></div>
+				<!-- <div class="result_part"></div> -->
+				<!-- <div class="result_train"></div> -->
+				<!-- <div class="result_car"></div> -->
 				<table id="result_table" frame=hsides rules=rows style="width:100%;"></table>
 			</div>
 		</div>
@@ -187,6 +191,7 @@
 			var station_obj={};
 			var node={};
 			var tr_display={};
+			var car_select=[];
 			init();
 			function init()
 			{
@@ -358,10 +363,11 @@
 					document.getElementById("result_div").innerHTML="";
 					document.getElementById("result_div").style.zIndex=20;
 					document.getElementById("result_div").innerHTML="<table id='result_table' frame=hsides rules=rows style='width:100%;'></table>";
-					var from_code,to_code,distance,STD,STA,train;
-					var temp_result_part,temp_result_train,temp_result_price;
+					var from_code,to_code,distance,STD,STA,train,price;
+					// var temp_result_part,temp_result_train,temp_result_price;
 					var tr,td;
 					tr_display={};
+					car_select=[];
 					for(var i=1;i<node[last_code].path.length;i++)
 					{
 						from_code=node[last_code].path[i-1];
@@ -376,6 +382,7 @@
 						tr=document.createElement("TR");
 						tr.className="tr_result_part";
 						tr_display["part_"+i]=1;
+						car_select[i-1]=[0,0,0];
 						addEvent_tr_click_update_display(tr,"part_"+i);
 						td=document.createElement("TD");
 						td.colSpan=4;
@@ -421,9 +428,11 @@
 							{
 								for(var k=0;k<car[train].length;k++)
 								{
+									price=price_cal(car[train][k],distance);
+
 									// temp_result_price=document.createElement("DIV");
 									// temp_result_price.className="result_car";
-									// temp_result_price.textContent=car_text(car[train][k])+" "+price_cal(car[train][k],distance)+" บาท";
+									// temp_result_price.textContent=car_text(car[train][k])+" "+price+" บาท";
 									// document.getElementById("result_div").appendChild(temp_result_price);
 
 									tr=document.createElement("TR");
@@ -431,6 +440,8 @@
 									tr.classList.add("part_"+i);
 									tr.classList.add("train_"+train);
 									tr.style.display="";
+									tr.style.backgroundColor="";
+									// addEvent_tr_result_car_click(tr,i,STD,STA,price);
 									td=document.createElement("TD");
 									tr.appendChild(td);
 									td=document.createElement("TD");
@@ -438,7 +449,7 @@
 									td.innerHTML=car_text(car[train][k]);
 									tr.appendChild(td);
 									td=document.createElement("TD");
-									td.innerHTML=price_cal(car[train][k],distance)+" บาท";
+									td.innerHTML=price+" บาท";
 									tr.appendChild(td);
 									document.getElementById("result_table").appendChild(tr);
 								}
@@ -486,6 +497,44 @@
 								document.getElementsByClassName(key)[i].style.display="none";
 							}
 						}break;
+					}
+				});
+			}
+			function addEvent_tr_result_car_click(tr,part,STD,STA,price)
+			{
+				tr.addEventListener("click",function()
+				{
+					for(var i=0;i<document.getElementsByClassName("part_"+part).length;i++)
+					{
+						document.getElementsByClassName("part_"+part)[i].style.backgroundColor="";
+					}
+					tr.style.backgroundColor="#9f9fff";
+					car_select[part-1]=[STD,STA,price];
+					var part_select_count=0;
+					for(var i=0;i<car_select.length;i++)
+					{
+						if(car_select[i][2]>0)part_select_count++;
+					}
+					if(car_select.length==part_select_count)
+					{
+						var car_select_1440=JSON.parse(JSON.stringify(car_select));
+						var sum_time;
+						var sum_price=0;
+						for(var i=0;i<car_select.length;i++)
+						{
+							if(i>0)
+							{
+								while(car_select_1440[i][0]<car_select_1440[i-1][1])
+								{
+									car_select_1440[i][0]=car_select_1440[i][0]+1440;
+									car_select_1440[i][1]=car_select_1440[i][1]+1440;
+								}
+							}
+							sum_time=car_select_1440[i][1]-car_select_1440[0][0];
+							sum_price=sum_price+car_select[i][2];
+						}
+						console.log("sum_time = "+sum_time+" min. ("+Math.floor(sum_time/1440)+" day "+time_display(sum_time)+" h.)");
+						console.log("sum_price = "+sum_price+" baht");
 					}
 				});
 			}
